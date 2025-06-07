@@ -1,0 +1,29 @@
+{
+  "title": "Midea CCM-15 Thermostat",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configure CCM-15 Device",
+        "description": "Enter the host and port of your CCM-15 device.",
+        "data": {
+          "host": "Host",
+          "port": "Port"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options"
+      }
+    }
+  },
+  "entity": {
+    "climate": {
+      "default": {
+        "name": "Midea CCM-15 Thermostat"
+      }
+    }
+  }
+} 
