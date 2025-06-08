@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from tkinter import NO
 from typing import TYPE_CHECKING
 
 from homeassistant.components.climate import ClimateEntity
