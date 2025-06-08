@@ -36,7 +36,7 @@ class CCM15ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             except TimeoutError as err:
                 LOGGER.error(f"Timeout error with CCM15 device: {err}")
                 errors["base"] = "timeout"
-            except Exception as err:
+            except (OSError, RuntimeError) as err:
                 LOGGER.error(f"Unexpected error with CCM15 device: {err}")
                 errors["base"] = "unknown"
             else:

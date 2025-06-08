@@ -1,16 +1,22 @@
-"""
-Custom integration to integrate ccm15 with Home Assistant.
-"""
+"""Custom integration to integrate ccm15 with Home Assistant."""
+
 from __future__ import annotations
 
-from datetime import timedelta
+from typing import TYPE_CHECKING
+
 from homeassistant.const import Platform
-from .const import DOMAIN, LOGGER
+
+from .const import DOMAIN
 from .coordinator import CCM15DataUpdateCoordinator
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
 
 PLATFORMS: list[Platform] = [Platform.CLIMATE]
 
-async def async_setup_entry(hass, entry):
+
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up ccm15 from a config entry."""
     coordinator = CCM15DataUpdateCoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
@@ -19,14 +25,16 @@ async def async_setup_entry(hass, entry):
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
     return True
 
-async def async_unload_entry(hass, entry):
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)
     return unload_ok
 
-async def async_reload_entry(hass, entry):
+
+async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload config entry."""
     await async_unload_entry(hass, entry)
-    await async_setup_entry(hass, entry) 
+    await async_setup_entry(hass, entry)
