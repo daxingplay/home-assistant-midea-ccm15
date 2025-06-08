@@ -16,6 +16,7 @@ from homeassistant.components.climate.const import (
     HVACMode,
 )
 from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, LOGGER
@@ -79,6 +80,16 @@ class CCM15Climate(CoordinatorEntity, ClimateEntity):
         self.coordinator: CCM15DataUpdateCoordinator = coordinator
         self._ac_name = ac_name
         self._ac_id = 2 ** int(ac_name.strip("a"))
+        self._attr_unique_id = f"{DOMAIN}_a{self._ac_id}"
+        self._attr_device_info = DeviceInfo(
+            identifiers={
+                # Serial numbers are unique identifiers within a specific domain
+                (DOMAIN, f"{ac_name}.{self._ac_id}"),
+            },
+            name=f"Midea {self._ac_id}",
+            manufacturer="Midea",
+            model="CCM15",
+        )
         self._attr_name = f"Midea CCM15 {ac_name}"
         self._attr_temperature_unit = UnitOfTemperature.CELSIUS
         self._attr_supported_features = (
