@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from tkinter import NO
 from typing import TYPE_CHECKING
 
 from homeassistant.components.climate import ClimateEntity
@@ -14,7 +15,7 @@ from homeassistant.components.climate.const import (
     ClimateEntityFeature,
     HVACMode,
 )
-from homeassistant.const import ATTR_TEMPERATURE, TEMP_CELSIUS
+from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, LOGGER
@@ -33,12 +34,12 @@ FAN_MAP = {
     FAN_HIGH: 4,
     FAN_OFF: 5,
 }
-REV_FAN_MAP: dict[str, str] = {
-    FAN_OFF: "off",
-    FAN_AUTO: "auto",
-    FAN_LOW: "low",
-    FAN_MEDIUM: "medium",
-    FAN_HIGH: "high",
+CMD_TO_FAN_MAP: dict[int, str] = {
+    0: FAN_AUTO,
+    2: FAN_LOW,
+    3: FAN_MEDIUM,
+    4: FAN_HIGH,
+    5: FAN_OFF,
 }
 
 HVAC_MAP = {
@@ -49,13 +50,13 @@ HVAC_MAP = {
     HVACMode.OFF: 4,
     HVACMode.AUTO: 5,
 }
-REV_HVAC_MAP: dict[int, HVACMode] = {
-    HVACMode.COOL: "cool",
-    HVACMode.HEAT: "heat",
-    HVACMode.DRY: "dry",
-    HVACMode.FAN_ONLY: "fan_only",
-    HVACMode.OFF: "off",
-    HVACMode.AUTO: "auto",
+CMD_TO_HVAC_MAP: dict[int, HVACMode] = {
+    0: HVACMode.COOL,
+    1: HVACMode.HEAT,
+    2: HVACMode.DRY,
+    3: HVACMode.FAN_ONLY,
+    4: HVACMode.OFF,
+    5: HVACMode.AUTO,
 }
 
 
@@ -75,10 +76,11 @@ class CCM15Climate(CoordinatorEntity, ClimateEntity):
     def __init__(self, coordinator: CCM15DataUpdateCoordinator, ac_name: str) -> None:
         """Initialize the CCM15 climate entity."""
         super().__init__(coordinator)
+        self.coordinator: CCM15DataUpdateCoordinator = coordinator
         self._ac_name = ac_name
         self._ac_id = 2 ** int(ac_name.strip("a"))
         self._attr_name = f"Midea CCM15 {ac_name}"
-        self._attr_temperature_unit = TEMP_CELSIUS
+        self._attr_temperature_unit = UnitOfTemperature.CELSIUS
         self._attr_supported_features = (
             ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.FAN_MODE
         )
@@ -95,21 +97,26 @@ class CCM15Climate(CoordinatorEntity, ClimateEntity):
     @property
     def current_temperature(self) -> float | None:
         """Return the current temperature."""
-        return self.coordinator.data[self._ac_name]["current_temperature"]
+        return self._get_ac_state().get("current_temperature")
 
     @property
-    def target_temperature(self):
+    def target_temperature(self) -> float | None:
+        """Return the target temperature."""
         return self._get_ac_state().get("settemp")
 
     @property
-    def fan_mode(self):
-        fan = self._get_ac_state().get("fan")
-        return REV_FAN_MAP.get(fan, FAN_AUTO)
+    def fan_mode(self) -> str | None:
+        """Return the current fan mode."""
+        fan = self._get_ac_state().get("fan", FAN_AUTO)
+        return CMD_TO_FAN_MAP.get(int(fan), FAN_AUTO)
 
     @property
-    def hvac_mode(self):
+    def hvac_mode(self) -> HVACMode | None:
+        """Return the current HVAC mode."""
         mode = self._get_ac_state().get("ac_mode")
-        return REV_HVAC_MAP.get(mode, HVACMode.OFF)
+        if mode is None:
+            return None
+        return CMD_TO_HVAC_MAP.get(mode, HVACMode.OFF)
 
     def _get_ac_state(self) -> dict:
         """Get the current state of the AC unit."""

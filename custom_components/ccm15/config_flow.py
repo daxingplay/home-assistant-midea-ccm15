@@ -1,12 +1,14 @@
 """Adds config flow for CCM15."""
 
 from __future__ import annotations
+
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.helpers import selector
-from .const import DOMAIN, LOGGER, DEFAULT_PORT
+
 from .api import CCM15ApiClient
+from .const import DEFAULT_PORT, DOMAIN, LOGGER
 
 
 class CCM15ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -20,11 +22,13 @@ class CCM15ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle the user step in the config flow."""
         errors = {}
         if user_input is not None:
+            ret = {
+                CONF_HOST: user_input[CONF_HOST],
+                CONF_PORT: int(user_input[CONF_PORT]),
+            }
             try:
                 # Test connection to the CCM15 device
-                client = CCM15ApiClient(
-                    user_input[CONF_HOST], user_input[CONF_PORT], self.hass
-                )
+                client = CCM15ApiClient(ret[CONF_HOST], ret[CONF_PORT], self.hass)
                 await client.async_get_status()
             except ConnectionError as err:
                 LOGGER.error(f"Connection error with CCM15 device: {err}")
@@ -38,7 +42,7 @@ class CCM15ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             else:
                 return self.async_create_entry(
                     title=user_input[CONF_HOST],
-                    data=user_input,
+                    data=ret,
                 )
 
         return self.async_show_form(
@@ -54,7 +58,10 @@ class CCM15ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_PORT, default=DEFAULT_PORT
                     ): selector.NumberSelector(
                         selector.NumberSelectorConfig(
-                            min=1, max=65535, mode=selector.NumberSelectorMode.BOX
+                            min=1,
+                            max=65535,
+                            mode=selector.NumberSelectorMode.BOX,
+                            step=1,
                         ),
                     ),
                 }
