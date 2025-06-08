@@ -1,12 +1,16 @@
 {
   "domain": "ccm15",
   "name": "Midea CCM-15 Thermostat",
-  "version": "1.0.0",
+  "codeowners": [
+    "@daxingplay"
+  ],
   "config_flow": true,
+  "dependencies": [],
   "documentation": "https://github.com/daxingplay/home-assistant-midea-ccm15",
-  "issue_tracker": "https://github.com/daxingplay/home-assistant-midea-ccm15/issues",
-  "codeowners": ["@daxingplay"],
-  "requirements": ["xmltodict==0.11.0"],
   "iot_class": "local_polling",
-  "dependencies": []
-} 
+  "issue_tracker": "https://github.com/daxingplay/home-assistant-midea-ccm15/issues",
+  "requirements": [
+    "xmltodict==0.11.0"
+  ],
+  "version": "1.0.0"
+}
