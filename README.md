@@ -1,5 +1,9 @@
 # Notice
 
+This component has been deprecated, please use official ccm15 integration instead!
+https://www.home-assistant.io/integrations/ccm15/
+
+
 The component and platforms in this repository are not meant to be used by a
 user, but as a "blueprint" that custom component developers can build
 upon, to make more awesome stuff.
