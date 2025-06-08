@@ -79,7 +79,7 @@ class CCM15Climate(CoordinatorEntity, ClimateEntity):
         self.coordinator: CCM15DataUpdateCoordinator = coordinator
         self._ac_name = ac_name
         self._ac_id = 2 ** int(ac_name.strip("a"))
-        self._attr_unique_id = f"{DOMAIN}_a{self._ac_id}"
+        self._attr_unique_id = f"{DOMAIN}_{ac_name}"
         self._attr_device_info = DeviceInfo(
             identifiers={
                 # Serial numbers are unique identifiers within a specific domain
@@ -149,10 +149,17 @@ class CCM15Climate(CoordinatorEntity, ClimateEntity):
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         """Set the HVAC mode."""
         ac_state = self._get_ac_state()
+        target_fan_mode = ac_state.get("fan", 0)
+        if (
+            ac_state.get("hvac_mode") != HVAC_MAP[hvac_mode]
+            and ac_state.get("fan") == FAN_MAP[FAN_OFF]
+        ):
+            target_fan_mode = FAN_MAP[FAN_AUTO]  # Default to auto if turning on HVAC
+
         await self.coordinator.api.async_set_state(
             self._ac_id,
             HVAC_MAP[hvac_mode],
-            ac_state.get("fan", 0),
+            target_fan_mode,
             ac_state.get("settemp", 24),
         )
         await self.coordinator.async_request_refresh()

@@ -25,6 +25,7 @@ from .const import (
     LOCKED_MODE_2,
     LOCKED_MODE_DEFAULT,
     LOCKED_MODE_NONE,
+    LOGGER,
 )
 
 if TYPE_CHECKING:
@@ -160,6 +161,7 @@ class CCM15ApiClient:
                     ac_state = self._get_status_from(ac_binary)
                     if ac_state:
                         acs[ac_name] = ac_state
+                        LOGGER.debug("Parsed AC state for %s: %s", ac_name, ac_state)
 
             return acs
 
@@ -185,6 +187,9 @@ class CCM15ApiClient:
         """
         params = f"ac0={ac_id}&ac1=0&mode={mode}&fan={fan}&temp={temp}"
         url = f"{self._base_url}/ctrl.xml?{params}"
+        LOGGER.debug(
+            "Setting state for AC %d: mode=%d, fan=%d, temp=%d", ac_id, mode, fan, temp
+        )
         session = async_get_clientsession(self._hass)
         timeout = aiohttp.ClientTimeout(total=10)
 
