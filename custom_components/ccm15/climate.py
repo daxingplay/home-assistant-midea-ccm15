@@ -77,15 +77,16 @@ class CCM15Climate(CoordinatorEntity, ClimateEntity):
         """Initialize the CCM15 climate entity."""
         super().__init__(coordinator)
         self.coordinator: CCM15DataUpdateCoordinator = coordinator
+        self._ac_host = coordinator.get_host()
         self._ac_name = ac_name
         self._ac_id = 2 ** int(ac_name.strip("a"))
-        self._attr_unique_id = f"{DOMAIN}_{ac_name}"
+        self._attr_unique_id = f"{DOMAIN}_{self._ac_host}_{ac_name}"
         self._attr_device_info = DeviceInfo(
             identifiers={
                 # Serial numbers are unique identifiers within a specific domain
-                (DOMAIN, f"{ac_name}.{self._ac_id}"),
+                (DOMAIN, f"{self._ac_host}.{self._ac_name}"),
             },
-            name=f"Midea {self._ac_id}",
+            name=f"Midea {self._ac_name}",
             manufacturer="Midea",
             model="CCM15",
         )

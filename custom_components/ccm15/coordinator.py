@@ -16,6 +16,14 @@ if TYPE_CHECKING:
 
 class CCM15DataUpdateCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, entry):
+        self._host = entry.data["host"]
+        self._port = entry.data["port"]
+        """Initialize the CCM15 data update coordinator."""
+        LOGGER.debug(
+            "Initializing CCM15DataUpdateCoordinator with host %s and port %s",
+            self._host,
+            self._port,
+        )
         self.api = CCM15ApiClient(entry.data["host"], entry.data["port"], hass)
         super().__init__(
             hass,
@@ -23,6 +31,14 @@ class CCM15DataUpdateCoordinator(DataUpdateCoordinator):
             name="CCM15 Data Coordinator",
             update_interval=timedelta(seconds=10),
         )
+
+    def get_host(self) -> str:
+        """Get the host."""
+        return self._host
+
+    def get_port(self) -> int:
+        """Get the port."""
+        return self._port
 
     async def _async_update_data(self):
         try:
